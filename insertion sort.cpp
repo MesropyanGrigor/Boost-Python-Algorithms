@@ -8,6 +8,68 @@ namespace BP = boost::python;
 /* Function to sort an array using insertion sort*/
 
 
+namespace merge
+{
+void merge(BP::list arr, int l, int m, int r)
+{
+    int i, j, k;
+    int n1 = m - l + 1;
+    int n2 = r - m;
+
+    int L[n1], R[n2];
+
+    for(i = 0; i < n1; i++)
+        L[i] = BP::extract<int>(arr[l+i]);
+    for(j=0; j<n2; j++)
+        R[j] = BP::extract<int>(arr[m+1+j]);
+
+    i = 0; j = 0; k = l;
+
+    while(i < n1 && j < n2){
+        if(L[i] <= R[j])
+        {
+            arr[k] = BP::object(L[i]);
+            i++;
+        }
+        else
+        {
+            arr[k] = BP::object(R[j]);
+            j++;
+        }
+        k++;
+    }
+
+    // Adding remaining elements of L array into the list
+    while( i < n1 )
+    {
+        arr[k] = BP::object(L[i]);
+        i++;
+        k++;
+    }
+
+    // Adding remaining elements of R array into the list
+    while( j < n2)
+    {
+        arr[k] = BP::object(R[j]);
+        j++;
+        k++;
+    }
+
+}
+
+void mergesort(BP::list arr, int l, int r)
+{
+    if (l < r){
+	int m = (l+r)/2;
+	mergesort(arr, l, m);
+	mergesort(arr, m + 1, r);
+	merge(arr, l, m, r);
+	}
+}
+
+}
+
+
 template<typename T>
 void insertionsort(BP::list arr) 
 {  
@@ -39,22 +101,13 @@ void printarray(BP::list arr)
 // A utility function to swap two elements  
 //void swap(int* elem_1, int* elem_2)  
 
-void swap1(auto elem_1, auto elem_2)  
-{  
-    cout<<BP::extract<int>(elem_1)<< "---"<< BP::extract<int>(elem_2)<<endl;
-    auto tmp = elem_1;  
-    elem_1 = elem_2;  
-    elem_2 = tmp;  
-    cout<<BP::extract<int>(elem_1)<< "---"<< BP::extract<int>(elem_2)<<endl;
-}  
-  
 void swap(auto elem_1, auto elem_2)  
 {  
-    cout<<BP::extract<int>(elem_1)<< "---"<< BP::extract<int>(elem_2)<<endl;
+   //cout<<BP::extract<int>(elem_1)<< "---"<< BP::extract<int>(elem_2)<<endl;
     BP::object tmp = elem_1;  //BP::extract<int>(elem_1);  
     elem_1 = elem_2;  
     elem_2 = tmp; //BP::object(tmp);  
-    cout<<BP::extract<int>(elem_1)<< "---"<< BP::extract<int>(elem_2)<<endl;
+    //cout<<BP::extract<int>(elem_1)<< "---"<< BP::extract<int>(elem_2)<<endl;
 }  
 /* This function takes last element as pivot, places  
 the pivot element at its correct position in sorted  
@@ -71,7 +124,6 @@ int partition(BP::list arr, int low, int high)
         if (arr[j] < pivot)  
         {  
             i++; // increment index of smaller element  
-	    cout<<typeid(arr[i]).name()<<endl;
             swap(arr[i], arr[j]);  
         }  
     }  
@@ -104,5 +156,6 @@ BOOST_PYTHON_MODULE(iso)
 {
 	BP::def("insertionsort", &insertionsort<int>, BP::args("arr"), "Insertion sort algorithm");
 	BP::def("qsort", &quicksort);
-        BP::def("printarray", &printarray);
+	BP::def("msort", &merge::mergesort);
+    BP::def("printarray", &printarray);
 }
